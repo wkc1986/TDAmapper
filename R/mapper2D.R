@@ -158,52 +158,61 @@ mapper2D <- function(
 
   # Note: num_vertices = vertex index.
   # Create the adjacency matrix for the graph, starting with a matrix of zeros
-  adja <- mat.or.vec( vertex_index, vertex_index )
+#  adja <- mat.or.vec( vertex_index, vertex_index )
+#
+#  for (i in 1:num_intervals[1]) {
+#    for (j in 2:num_intervals[2]) {
+#
+#      # For adjacent level sets L_{i,j} and L_{i,j-1}, get the sequential index values k1 and k2
+#      k1 <- which( (level_indices_1 == i) & (level_indices_2 == j) )
+#      k2 <- which( (level_indices_1 == i) & (level_indices_2 == j-1))
+#
+#      # check that both level sets are nonemtpy
+#	  if ( (vertices_in_level[[k1]][1] != -1) & (vertices_in_level[[k2]][1] != -1) ) {
+#
+#        for (v1 in vertices_in_level[[k1]]) {
+#          for (v2 in vertices_in_level[[k2]]) {
+#            # return 1 if the intersection is nonempty
+#            adja[v1,v2] <- ( length(intersect(points_in_vertex[[v1]],
+#                                              points_in_vertex[[v2]])) > 0 )
+#            adja[v2,v1] <- adja[v1,v2]
+#          }
+#        }
+#
+#      }
+#    } # end part 1 of constructing adjacency matrix
+#  }
+#  for (j in 1:num_intervals[2]) {
+#    for (i in 2:num_intervals[1]) {
+#
+#      # For adjacent level sets L_{i,j} and L_{i-1,j}, get the sequential index values k1 and k2
+#      k1 <- which( (level_indices_1 == i) & (level_indices_2 == j) )
+#      k2 <- which( (level_indices_1 == i-1) & (level_indices_2 == j))
+#
+#      # check that both level sets are nonemtpy
+#	  if ( (vertices_in_level[[k1]][1] != -1) & (vertices_in_level[[k2]][1] != -1) ) {
+#
+#        for (v1 in vertices_in_level[[k1]]) {
+#          for (v2 in vertices_in_level[[k2]]) {
+#            # return 1 if the intersection is nonempty
+#            adja[v1,v2] <- ( length(intersect(points_in_vertex[[v1]],
+#                                              points_in_vertex[[v2]])) > 0 )
+#            adja[v2,v1] <- adja[v1,v2]
+#          }
+#        }
+#
+#      }
+#    } # end part 2 of constructing adjacency matrix
+#  }
 
-  for (i in 1:num_intervals[1]) {
-    for (j in 2:num_intervals[2]) {
-
-      # For adjacent level sets L_{i,j} and L_{i,j-1}, get the sequential index values k1 and k2
-      k1 <- which( (level_indices_1 == i) & (level_indices_2 == j) )
-      k2 <- which( (level_indices_1 == i) & (level_indices_2 == j-1))
-
-      # check that both level sets are nonemtpy
-	  if ( (vertices_in_level[[k1]][1] != -1) & (vertices_in_level[[k2]][1] != -1) ) {
-
-        for (v1 in vertices_in_level[[k1]]) {
-          for (v2 in vertices_in_level[[k2]]) {
-            # return 1 if the intersection is nonempty
-            adja[v1,v2] <- ( length(intersect(points_in_vertex[[v1]],
-                                              points_in_vertex[[v2]])) > 0 )
-            adja[v2,v1] <- adja[v1,v2]
-          }
-        }
-
-      }
-    } # end part 1 of constructing adjacency matrix
+  # !!Replacement method for adjacency function!! wkc 2018
+	nv <- length(points_in_vertex)
+  np <- max(sapply(points_in_vertex, max)) # max point id
+  vp <- matrix(0, nv, np)
+  for (vi in seq_len(nv)) {
+    vp[vi, points_in_vertex[[vi]]] <- 1
   }
-  for (j in 1:num_intervals[2]) {
-    for (i in 2:num_intervals[1]) {
-
-      # For adjacent level sets L_{i,j} and L_{i-1,j}, get the sequential index values k1 and k2
-      k1 <- which( (level_indices_1 == i) & (level_indices_2 == j) )
-      k2 <- which( (level_indices_1 == i-1) & (level_indices_2 == j))
-
-      # check that both level sets are nonemtpy
-	  if ( (vertices_in_level[[k1]][1] != -1) & (vertices_in_level[[k2]][1] != -1) ) {
-
-        for (v1 in vertices_in_level[[k1]]) {
-          for (v2 in vertices_in_level[[k2]]) {
-            # return 1 if the intersection is nonempty
-            adja[v1,v2] <- ( length(intersect(points_in_vertex[[v1]],
-                                              points_in_vertex[[v2]])) > 0 )
-            adja[v2,v1] <- adja[v1,v2]
-          }
-        }
-
-      }
-    } # end part 2 of constructing adjacency matrix
-  }
+  adja <- (vp %*% t(vp)) > 0
 
   mapperoutput <- list(adjacency = adja,
                        num_vertices = vertex_index,
